@@ -1,0 +1,1 @@
+from .service import get_character_response 
