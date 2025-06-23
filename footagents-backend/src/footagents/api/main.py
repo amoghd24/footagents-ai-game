@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 from ..domain.models import ChatRequest, ChatResponse
 from ..domain.character_factory import FootballLegendFactory
-from ..application.conversation_service.workflow import get_character_response
+from ..application.conversation_service.workflow.service import get_character_response
 
 load_dotenv()
 
