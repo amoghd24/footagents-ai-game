@@ -59,16 +59,27 @@ class MongoDBConnectionManager:
                 if not connection_string:
                     raise ValueError("MONGODB_CONNECTION_STRING environment variable is required")
                 
-                logger.info(f"Connecting to MongoDB database: {database_name}")
-                
                 # Create MongoDB client
                 self._client = AsyncIOMotorClient(connection_string)
                 
                 # Test connection
                 await self._client.admin.command('ping')
                 
+                # Extract database name from connection string if it exists
+                if "/footagents_db?" in connection_string:
+                    actual_database_name = "footagents_db"
+                elif "/" in connection_string and "?" in connection_string:
+                    # Extract database name between the last "/" and "?"
+                    start = connection_string.rfind("/") + 1
+                    end = connection_string.find("?", start)
+                    actual_database_name = connection_string[start:end] if end > start else database_name
+                else:
+                    actual_database_name = database_name
+                
+                logger.info(f"Connecting to MongoDB database: {actual_database_name}")
+                
                 # Get database
-                self._database = self._client[database_name]
+                self._database = self._client[actual_database_name]
                 
                 logger.info("✅ MongoDB connection established successfully")
                 
