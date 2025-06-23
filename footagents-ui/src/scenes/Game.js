@@ -69,11 +69,11 @@ export class Game extends Scene
 
     createPlayers() {
         const playerConfigs = [
-            { id: "leomessi", name: "Leo Messi", defaultDirection: "right", roamRadius: 200, x: 200, y: 150 },
+            { id: "messi", name: "Leo Messi", defaultDirection: "right", roamRadius: 200, x: 200, y: 150 },
             { id: "ronaldonazario", name: "Ronaldo Nazario", defaultDirection: "right", roamRadius: 180, x: 400, y: 200 },
             { id: "kaka", name: "KAKA", defaultDirection: "front", roamRadius: 150, x: 600, y: 150 },
             { id: "maradona", name: "Maradona", defaultDirection: "front", roamRadius: 160, x: 800, y: 300 },
-            { id: "cristianoronaldo", name: "Cristiano Ronaldo", defaultDirection: "front", roamRadius: 170, x: 300, y: 400 },
+            { id: "ronaldo", name: "Cristiano Ronaldo", defaultDirection: "front", roamRadius: 170, x: 300, y: 400 },
             { id: "sergioramos", name: "Sergio Ramos", defaultDirection: "front", roamRadius: 180, x: 150, y: 350 },
             { id: "pepguardiola", name: "Pep Guardiola", defaultDirection: "front", roamRadius: 150, x: 550, y: 300 },
             { id: "alexferguson", name: "Alex Ferguson", defaultDirection: "front", roamRadius: 160, x: 350, y: 250 },

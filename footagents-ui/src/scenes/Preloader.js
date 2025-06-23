@@ -19,11 +19,11 @@ export class Preloader extends Scene
 
         // Character assets
         this.load.atlas("sophia", "characters/sophia/atlas.png", "characters/sophia/atlas.json");
-        this.load.atlas("leomessi", "characters/leomessi/atlas.png", "characters/leomessi/atlas.json"); 
+        this.load.atlas("messi", "characters/leomessi/atlas.png", "characters/leomessi/atlas.json"); 
         this.load.atlas("kaka", "characters/kaka/atlas.png", "characters/kaka/atlas.json"); 
         this.load.atlas("ronaldonazario", "characters/ronaldonazario/atlas.png", "characters/ronaldonazario/atlas.json"); 
         this.load.atlas("maradona", "characters/maradona/atlas.png", "characters/maradona/atlas.json"); 
-        this.load.atlas("cristianoronaldo", "characters/cristianoronaldo/atlas.png", "characters/cristianoronaldo/atlas.json"); 
+        this.load.atlas("ronaldo", "characters/cristianoronaldo/atlas.png", "characters/cristianoronaldo/atlas.json"); 
         this.load.atlas("sergioramos", "characters/sergioramos/atlas.png", "characters/sergioramos/atlas.json"); 
         this.load.atlas("pepguardiola", "characters/pepguardiola/atlas.png", "characters/pepguardiola/atlas.json"); 
         this.load.atlas("alexferguson", "characters/alexferguson/atlas.png", "characters/alexferguson/atlas.json"); 

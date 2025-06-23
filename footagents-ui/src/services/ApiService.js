@@ -34,7 +34,7 @@ class ApiService {
     try {
       const data = await this.request('/chat', 'POST', {
         message,
-        player_id: player.id
+        character_id: player.id
       });
       
       return data.response;
