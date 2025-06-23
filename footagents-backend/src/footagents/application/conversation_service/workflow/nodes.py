@@ -1,11 +1,16 @@
 from langgraph.graph.message import RemoveMessage
 from langchain.schema import HumanMessage, AIMessage
 from .state import FootAgentState
-from .tools import get_character_chain, get_summary_chain, retriever_tool
+from .tools import retriever_tool
+from .chains import (
+    get_character_response_chain,
+    get_conversation_summary_chain,
+    get_context_summary_chain
+)
 
 async def conversation_node(state: FootAgentState):
     """Invoke the character chain to generate a response."""
-    chain = get_character_chain()
+    chain = get_character_response_chain()
     response = await chain.ainvoke({
         "character_name": state["character_name"],
         "position": state["character_position"],
@@ -34,13 +39,27 @@ async def retrieve_philosopher_context(state: FootAgentState):
 
 async def summarize_conversation_node(state: FootAgentState):
     """Summarize the conversation and remove old messages."""
-    summary_chain = get_summary_chain()
-    conversation_text = "\n".join([
+    existing_summary = state.get("summary", "")
+    summary_chain = get_conversation_summary_chain(existing_summary)
+    
+    # Format messages for summarization
+    formatted_messages = "\n".join([
         f"{msg.type}: {msg.content}" for msg in state["messages"]
     ])
-    response = await summary_chain.ainvoke({
-        "text": f"Conversation with {state['character_name']}:\n{conversation_text}"
-    })
+    
+    # Use appropriate parameters based on chain type
+    if existing_summary:
+        response = await summary_chain.ainvoke({
+            "character_name": state["character_name"],
+            "existing_summary": existing_summary, 
+            "messages": formatted_messages
+        })
+    else:
+        response = await summary_chain.ainvoke({
+            "character_name": state["character_name"],
+            "messages": formatted_messages
+        })
+    
     delete_messages = [RemoveMessage(id=msg.id) for msg in state["messages"][:-5]]
     return {
         "summary": response.content,
@@ -52,9 +71,9 @@ async def summarize_context_node(state: FootAgentState):
     if not state.get("character_context"):
         return {"character_context": ""}
     
-    summary_chain = get_summary_chain()
-    response = await summary_chain.ainvoke({
-        "text": f"Context about {state['character_name']}:\n{state['character_context']}"
+    context_summary_chain = get_context_summary_chain()
+    response = await context_summary_chain.ainvoke({
+        "context": state["character_context"]
     })
     
     return {"character_context": response.content}
@@ -71,4 +90,4 @@ async def connector_node(state: FootAgentState):
     
     return {
         "system_context": system_context
-    } 
+    }
