@@ -1,6 +1,7 @@
 from langgraph.graph.message import RemoveMessage
+from langchain.schema import HumanMessage, AIMessage
 from .state import FootAgentState
-from .tools import get_character_chain, get_summary_chain
+from .tools import get_character_chain, get_summary_chain, retriever_tool
 
 async def conversation_node(state: FootAgentState):
     """Invoke the character chain to generate a response."""
@@ -17,6 +18,20 @@ async def conversation_node(state: FootAgentState):
     })
     return {"messages": [response]}
 
+async def retrieve_philosopher_context(state: FootAgentState):
+    """Retrieve relevant context about the football legend/philosopher."""
+    # Get the last human message to understand what context to retrieve
+    last_message = state["messages"][-1] if state["messages"] else ""
+    query = f"{state['character_name']} {last_message.content if hasattr(last_message, 'content') else str(last_message)}"
+    
+    # Use the retriever tool to get context
+    context_docs = await retriever_tool.ainvoke({"query": query})
+    
+    # Combine the retrieved context
+    context = "\n".join([doc.page_content if hasattr(doc, 'page_content') else str(doc) for doc in context_docs])
+    
+    return {"character_context": context}
+
 async def summarize_conversation_node(state: FootAgentState):
     """Summarize the conversation and remove old messages."""
     summary_chain = get_summary_chain()
@@ -30,4 +45,30 @@ async def summarize_conversation_node(state: FootAgentState):
     return {
         "summary": response.content,
         "messages": delete_messages
+    }
+
+async def summarize_context_node(state: FootAgentState):
+    """Summarize the retrieved context for better processing."""
+    if not state.get("character_context"):
+        return {"character_context": ""}
+    
+    summary_chain = get_summary_chain()
+    response = await summary_chain.ainvoke({
+        "text": f"Context about {state['character_name']}:\n{state['character_context']}"
+    })
+    
+    return {"character_context": response.content}
+
+async def connector_node(state: FootAgentState):
+    """Connector node to handle flow control and state management."""
+    # This node can be used to prepare state for the next phase
+    # or perform any necessary transformations
+    
+    # Add a system message to help guide the conversation
+    system_context = f"You are {state['character_name']}, a {state['character_position']} from the {state['character_era']} era."
+    if state.get("character_context"):
+        system_context += f" Context: {state['character_context']}"
+    
+    return {
+        "system_context": system_context
     } 

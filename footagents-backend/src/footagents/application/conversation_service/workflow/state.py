@@ -9,4 +9,5 @@ class FootAgentState(MessagesState):
     character_era: str = ""
     character_perspective: str = ""
     character_style: str = ""
-    summary: str = "" 
+    summary: str = ""
+    system_context: str = "" 
