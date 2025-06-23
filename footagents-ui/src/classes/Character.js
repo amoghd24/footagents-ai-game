@@ -5,7 +5,10 @@ class Character {
     this.name = config.name;
     this.spawnPoint = config.spawnPoint;
     this.atlas = config.atlas;
-    this.defaultFrame = `${this.id}-${config.defaultDirection || 'front'}`;
+    
+    // Map new character IDs to their actual atlas frame prefixes
+    this.framePrefix = this.getFramePrefix(this.id);
+    this.defaultFrame = `${this.framePrefix}-${config.defaultDirection || 'front'}`;
     this.defaultMessage = config.defaultMessage;
     
     this.isRoaming = config.canRoam !== false; 

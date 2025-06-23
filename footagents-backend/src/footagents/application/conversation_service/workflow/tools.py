@@ -12,8 +12,8 @@ retriever = get_retriever(
 
 retriever_tool = create_retriever_tool(
     retriever,
-    "retrieve_philosopher_context",
-    "Search and return information about a specific philosopher.",
+    "retrieve_player_context",
+    "Search and return information about a specific football player.",
 )
 
 tools = [retriever_tool] 

@@ -23,8 +23,8 @@ async def conversation_node(state: FootAgentState):
     })
     return {"messages": [response]}
 
-async def retrieve_philosopher_context(state: FootAgentState):
-    """Retrieve relevant context about the football legend/philosopher."""
+async def retrieve_player_context(state: FootAgentState):
+    """Retrieve relevant context about the football player."""
     # Get the last human message to understand what context to retrieve
     last_message = state["messages"][-1] if state["messages"] else ""
     query = f"{state['character_name']} {last_message.content if hasattr(last_message, 'content') else str(last_message)}"
