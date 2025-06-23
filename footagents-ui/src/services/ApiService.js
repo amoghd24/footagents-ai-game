@@ -32,6 +32,13 @@ class ApiService {
 
   async sendMessage(player, message) {
     try {
+      console.log('=== API DEBUG ===');
+      console.log('Player object:', player);
+      console.log('Character ID being sent:', player.id);
+      console.log('Character name:', player.name);
+      console.log('Message:', message);
+      console.log('=================');
+      
       const data = await this.request('/chat', 'POST', {
         message,
         character_id: player.id
