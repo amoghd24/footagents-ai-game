@@ -83,16 +83,14 @@ export class Game extends Scene
                 name: "Neymar", 
                 defaultDirection: "front", 
                 roamRadius: 120,
-                x: 500, y: 500,
-                defaultMessage: "Hey there! I'm Neymar Jr! Want to know some football tricks? I'm always ready to talk about the beautiful game!" 
+                x: 500, y: 500
             },
             { 
                 id: "jurgenklopp", 
                 name: "Jurgen Klopp", 
                 defaultDirection: "front",
                 roamRadius: 120,
-                x: 650, y: 500,
-                defaultMessage: "Hello! I'm Jurgen Klopp. Football is about passion, teamwork, and never giving up. Let's talk tactics!" 
+                x: 650, y: 500
             }
         ];
 

@@ -9,6 +9,10 @@ class ApiService {
     } else {
       this.apiUrl = 'http://localhost:8000';
     }
+    
+    // Debug: Log the API URL being used
+    console.log('🔗 API URL configured:', this.apiUrl);
+    console.log('🌐 Current window location:', window.location.href);
   }
 
   async request(endpoint, method, data) {
@@ -21,7 +25,17 @@ class ApiService {
       body: data ? JSON.stringify(data) : undefined,
     };
 
+    // Debug: Log the full request details
+    console.log('🚀 Making API request:', {
+      url,
+      method,
+      data,
+      headers: options.headers
+    });
+
     const response = await fetch(url, options);
+    
+    console.log('📥 API response status:', response.status, response.statusText);
     
     if (!response.ok) {
       throw new Error(`API error: ${response.status} ${response.statusText}`);

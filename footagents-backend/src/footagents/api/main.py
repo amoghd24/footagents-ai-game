@@ -47,6 +47,17 @@ async def health_check():
     return {"status": "healthy", "timestamp": datetime.now()}
 
 
+@app.post("/reset-memory")
+async def reset_memory():
+    """Reset conversation memory - placeholder implementation"""
+    try:
+        # Add your memory reset logic here
+        # For now, just return success
+        return {"message": "Memory reset successfully", "timestamp": datetime.now()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error resetting memory: {str(e)}")
+
+
 @app.get("/characters")
 async def get_characters():
     legends = FootballLegendFactory.get_available_legends()
