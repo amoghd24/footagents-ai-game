@@ -1,5 +1,5 @@
 import ApiService from '../services/ApiService';
-import WebSocketApiService from '../services/WebSocketApiService';
+// import WebSocketApiService from '../services/WebSocketApiService'; // TODO: Uncomment when adding WebSocket support
 
 class DialogueManager {
   constructor(scene) {
@@ -89,9 +89,15 @@ class DialogueManager {
   // === Message Processing ===
   
   async handleDefaultMessage() {
-    const apiResponse = this.activePlayer.defaultMessage;
-    this.dialogueBox.show('', true);
-    await this.streamText(apiResponse);
+    if (this.activePlayer.defaultMessage) {
+      // Use the predefined default message
+      const apiResponse = this.activePlayer.defaultMessage;
+      this.dialogueBox.show('', true);
+      await this.streamText(apiResponse);
+    } else {
+      // Fall back to API call for characters without default messages
+      await this.fallbackToRegularApi();
+    }
   }
 
   async handleWebSocketMessage() {
@@ -99,60 +105,83 @@ class DialogueManager {
     this.isStreaming = true;
     this.streamingText = '';
     
+    // TODO: Uncomment when adding WebSocket support
+    // try {
+    //   await this.processWebSocketMessage();
+    // } catch (error) {
+    //   console.error('WebSocket error:', error);
+    //   console.log('Falling back to REST API...');
+    //   await this.fallbackToRegularApi();
+    // } finally {
+    //   this.isStreaming = false;
+    //   this.isTyping = false;
+    // }
+    
+    // For now, directly use HTTP API
     try {
-      await this.processWebSocketMessage();
-    } catch (error) {
-      console.error('WebSocket error:', error);
       await this.fallbackToRegularApi();
     } finally {
+      this.isStreaming = false;
       this.isTyping = false;
     }
   }
 
-  async processWebSocketMessage() {
-    await WebSocketApiService.connect();
-    
-    const callbacks = {
-      onMessage: () => { 
-        this.finishStreaming();
-      },
-      onChunk: (chunk) => {
-        this.streamingText += chunk;
-        this.dialogueBox.show(this.streamingText, true);
-      },
-      onStreamingStart: () => {
-        this.isStreaming = true;
-      },
-      onStreamingEnd: () => {
-        this.finishStreaming();
-      }
-    };
-    
-    await WebSocketApiService.sendMessage(
-      this.activePlayer,
-      this.currentMessage,
-      callbacks
-    );
-    
-    while (this.isStreaming) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    
-    this.currentMessage = '';
-    WebSocketApiService.disconnect();
-  }
+  // TODO: Uncomment when adding WebSocket support
+  // async processWebSocketMessage() {
+  //   try {
+  //     await WebSocketApiService.connect();
+  //     
+  //     const callbacks = {
+  //       onMessage: () => { 
+  //         this.finishStreaming();
+  //       },
+  //       onChunk: (chunk) => {
+  //         this.streamingText += chunk;
+  //         this.dialogueBox.show(this.streamingText, true);
+  //       },
+  //       onStreamingStart: () => {
+  //         this.isStreaming = true;
+  //       },
+  //       onStreamingEnd: () => {
+  //         this.finishStreaming();
+  //       }
+  //     };
+  //     
+  //     await WebSocketApiService.sendMessage(
+  //       this.activePlayer,
+  //       this.currentMessage,
+  //       callbacks
+  //     );
+  //     
+  //     while (this.isStreaming) {
+  //       await new Promise(resolve => setTimeout(resolve, 100));
+  //     }
+  //     
+  //     WebSocketApiService.disconnect();
+  //   } catch (error) {
+  //     console.error('WebSocket processing failed:', error);
+  //     throw error; // Re-throw to trigger fallback
+  //   }
+  // }
 
-  finishStreaming() {
-    this.isStreaming = false;
-    this.dialogueBox.show(this.streamingText, true);
-  }
+  // TODO: Uncomment when adding WebSocket support
+  // finishStreaming() {
+  //   this.isStreaming = false;
+  //   this.dialogueBox.show(this.streamingText, true);
+  // }
 
   async fallbackToRegularApi() {
-    const apiResponse = await ApiService.sendMessage(
-      this.activePlayer, 
-      this.currentMessage
-    );
-    await this.streamText(apiResponse);
+    try {
+      console.log(`Sending API request for character: ${this.activePlayer.id}`);
+      const apiResponse = await ApiService.sendMessage(
+        this.activePlayer, 
+        this.currentMessage
+      );
+      await this.streamText(apiResponse);
+    } catch (error) {
+      console.error('API fallback also failed:', error);
+      await this.streamText("Sorry, I'm having trouble connecting right now. Please try again later.");
+    }
   }
 
   // === UI Management ===
@@ -279,9 +308,10 @@ class DialogueManager {
   scheduleDisconnect() {
     this.cancelDisconnectTimeout();
     
-    this.disconnectTimeout = setTimeout(() => {
-      WebSocketApiService.disconnect();
-    }, 5000);
+    // TODO: Uncomment when adding WebSocket support
+    // this.disconnectTimeout = setTimeout(() => {
+    //   WebSocketApiService.disconnect();
+    // }, 5000);
   }
 }
 

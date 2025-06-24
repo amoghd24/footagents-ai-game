@@ -37,6 +37,76 @@ class Character {
     }
   }
   
+  /**
+   * Maps character IDs to their corresponding asset folder names.
+   * This handles cases where the character ID used in game logic 
+   * differs from the actual asset folder name.
+   * 
+   * @param {string} characterId - The character ID used in game configuration
+   * @returns {string} The corresponding asset folder name/frame prefix
+   * @throws {Error} If character ID is invalid
+   * 
+   * @example
+   * getFramePrefix('messi') // returns 'leomessi'
+   * getFramePrefix('ronaldo') // returns 'cristianoronaldo'
+   * getFramePrefix('kaka') // returns 'kaka'
+   */
+  getFramePrefix(characterId) {
+    // Validate input
+    if (!characterId || typeof characterId !== 'string') {
+      throw new Error(`Invalid character ID: ${characterId}. Expected non-empty string.`);
+    }
+
+    // Character ID to asset folder mapping (Centralized configuration)
+    const CHARACTER_ASSET_MAPPING = Object.freeze({
+      // Characters with different asset folder names
+      'messi': 'leomessi',
+      'ronaldo': 'cristianoronaldo',
+      
+      // Characters with matching asset folder names
+      'ronaldonazario': 'ronaldonazario',
+      'kaka': 'kaka',
+      'maradona': 'maradona',
+      'neymar': 'neymar',
+      'sergioramos': 'sergioramos',
+      'pepguardiola': 'pepguardiola',
+      'alexferguson': 'alexferguson',
+      'ancelotti': 'ancelotti',
+      'jurgenklopp': 'jurgenklopp',
+      'sophia': 'sophia'
+    });
+
+    const normalizedId = characterId.toLowerCase().trim();
+    const assetName = CHARACTER_ASSET_MAPPING[normalizedId];
+    
+    if (!assetName) {
+      // Enhanced debugging with stack trace context
+      console.warn(`[Character] Asset mapping not found for ID: "${characterId}". Available IDs: ${Object.keys(CHARACTER_ASSET_MAPPING).join(', ')}. Using normalized ID as fallback: "${normalizedId}"`);
+      return normalizedId;
+    }
+
+    return assetName;
+  }
+
+  /**
+   * Validates if a frame exists in the loaded texture atlas
+   * @param {string} frameName - The frame name to validate
+   * @returns {boolean} True if frame exists, false otherwise
+   */
+  validateFrame(frameName) {
+    try {
+      const texture = this.scene.textures.get(this.atlas);
+      return texture && texture.has(frameName);
+    } catch (error) {
+      console.warn(`[Character] Frame validation failed for "${frameName}":`, error.message);
+      return false;
+    }
+  }
+  
+  /**
+   * Creates walking animations for all directions.
+   * Uses framePrefix for proper asset mapping and includes error handling.
+   */
   createAnimations() {
     const anims = this.scene.anims;
     const directions = ['left', 'right', 'front', 'back'];
@@ -45,16 +115,28 @@ class Character {
       const animKey = `${this.id}-${direction}-walk`;
       
       if (!anims.exists(animKey)) {
-        anims.create({
-          key: animKey,
-          frames: anims.generateFrameNames(this.atlas, {
-            prefix: `${this.id}-${direction}-walk-`,
-            end: 8,
-            zeroPad: 4,
-          }),
-          frameRate: 10,
-          repeat: -1,
-        });
+        try {
+          // Validate that at least the first frame exists before creating animation
+          const firstFrameName = `${this.framePrefix}-${direction}-walk-0000`;
+          
+          if (!this.validateFrame(firstFrameName)) {
+            console.warn(`[Character] Missing animation frames for ${this.id} (${this.framePrefix}) direction: ${direction}. Skipping animation creation.`);
+            return;
+          }
+
+          anims.create({
+            key: animKey,
+            frames: anims.generateFrameNames(this.atlas, {
+              prefix: `${this.framePrefix}-${direction}-walk-`,
+              end: 8,
+              zeroPad: 4,
+            }),
+            frameRate: 10,
+            repeat: -1,
+          });
+        } catch (error) {
+          console.error(`[Character] Failed to create animation for ${this.id} direction ${direction}:`, error);
+        }
       }
     });
   }
@@ -64,9 +146,9 @@ class Character {
     const dy = player.y - this.sprite.y;
     
     if (Math.abs(dx) > Math.abs(dy)) {
-      this.sprite.setTexture(this.atlas, `${this.id}-${dx < 0 ? 'left' : 'right'}`);
+      this.sprite.setTexture(this.atlas, `${this.framePrefix}-${dx < 0 ? 'left' : 'right'}`);
     } else {
-      this.sprite.setTexture(this.atlas, `${this.id}-${dy < 0 ? 'back' : 'front'}`);
+      this.sprite.setTexture(this.atlas, `${this.framePrefix}-${dy < 0 ? 'back' : 'front'}`);
     }
   }
   
@@ -98,7 +180,7 @@ class Character {
       if (this.scene.anims.exists(animKey)) {
         this.sprite.anims.play(animKey);
       } else {
-        this.sprite.setTexture(this.atlas, `${this.id}-${this.getDirectionFromMovement()}`);
+        this.sprite.setTexture(this.atlas, `${this.framePrefix}-${this.getDirectionFromMovement()}`);
       }
       
       this.moveDuration = Phaser.Math.Between(500, 1000);
@@ -111,7 +193,7 @@ class Character {
       this.sprite.anims.stop();
       
       const direction = ['front', 'back', 'left', 'right'][Math.floor(Math.random() * 4)];
-      this.sprite.setTexture(this.atlas, `${this.id}-${direction}`);
+      this.sprite.setTexture(this.atlas, `${this.framePrefix}-${direction}`);
       
       this.pauseDuration = Phaser.Math.Between(2000, 6000);
       this.movementTimer = this.scene.time.delayedCall(this.pauseDuration, () => {
@@ -193,7 +275,7 @@ class Character {
       if (this.scene.anims.exists(animKey)) {
         this.sprite.anims.play(animKey);
       } else {
-        this.sprite.setTexture(this.atlas, `${this.id}-${this.getDirectionFromMovement()}`);
+        this.sprite.setTexture(this.atlas, `${this.framePrefix}-${this.getDirectionFromMovement()}`);
       }
       
       // Add a timer to force direction change if they get stuck
